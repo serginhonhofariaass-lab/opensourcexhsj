@@ -1,0 +1,23 @@
+[build]
+  command = "npx prisma generate && npm run build"
+  publish = ".next/server"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[context.production.environment]
+  DATABASE_URL = "postgresql://postgres:[YOUR-PASSWORD]@db.fqannlwawzgeaerifmoe.supabase.co:5432/postgres"
+  MP_ACCESS_TOKEN = "APP_USR-3176210632792405-122618-59c853a94fa021b3f7ba773a94d051bb-221805708"
+  NEXT_PUBLIC_MP_PUBLISHABLE_KEY = "sb_publishable_cwOIIKaF9MKIsYxaTm9Ylw_v08iZ6bv"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/api/:splat"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+

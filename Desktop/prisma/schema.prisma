@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Event {
+  id          String       @id @default(uuid())
+  title       String
+  description String
+  date        DateTime
+  location    String
+  price       Int          // price in cents (fallback if no tiers)
+  imageUrl    String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  tickets     Ticket[]
+  tiers       TicketTier[]
+}
+
+model TicketTier {
+  id          String   @id @default(uuid())
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name        String   // "1º Lote", "2º Lote", "Combo", etc.
+  price       Int      // price in cents
+  startDate   DateTime
+  endDate     DateTime
+  minQuantity Int      @default(1) // minimum tickets required to use this tier
+  createdAt   DateTime @default(now())
+}
+
+model Ticket {
+  id              String    @id @default(uuid())
+  eventId         String
+  event           Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  buyerName       String
+  buyerEmail      String
+  buyerPhone      String?
+  buyerCpf        String?
+  quantity        Int       @default(1)
+  totalPrice      Int       @default(0)
+  paymentMethod   String    @default("pix") // pix, pix_parcelado
+  mercadoPagoId   String?
+  secondPaymentId String?   // For pix_parcelado - second PIX payment
+  status          String    @default("pending") // pending, approved, cancelled, partial
+  ticketCode      String?   // Unique code for validation (barcode)
+  tierId          String?   // Which tier was purchased
+  tierName        String?   // Name of the tier at time of purchase
+  usedAt          DateTime? // When the ticket was used/validated
+  usedBy          String?   // Who validated the ticket (admin user)
+  receiptUrl      String?   // Base64 data URL of payment receipt (PIX)
+  receipt2Url     String?   // Base64 data URL of second receipt (PIX parcelado)
+  createdAt       DateTime  @default(now())
+}
+
+model Admin {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model SiteSettings {
+  id              String   @id @default(uuid())
+  siteName        String   @default("No Abraço do Pai")
+  logoUrl         String?
+  primaryColor    String   @default("#004642")
+  secondaryColor  String   @default("#E5D4C8")
+  backgroundColor String   @default("#FFFFFF")
+  textColor       String   @default("#1A1A1A")
+  footerText      String?
+  contactEmail    String?
+  heroTitle       String   @default("Criado para promover suas experiências")
+  heroSubtitle    String   @default("Descubra os melhores eventos religiosos e culturais perto de você")
+  mpAccessToken   String?
+  mpWebhookUrl    String?
+  updatedAt       DateTime @updatedAt
+}
